@@ -1,7 +1,7 @@
 # Keyple Plugin SpringCard PC/SC-like Android
 
 [![Kotlin](https://img.shields.io/badge/kotlin-1.4.20-blue.svg?logo=kotlin)](http://kotlinlang.org)
-[![KDoc link](https://img.shields.io/badge/API_reference-KDoc-blue)](https://springcard.github.io/keyple-plugin-springcard-pcsclike-android/)
+[![KDoc link](https://img.shields.io/badge/API_reference-KDoc-blue)](https://springcard.github.io/keyple-plugin-springcard-android-pcsclike-java-lib/)
 
 ## Overview
 
@@ -19,7 +19,7 @@ implementation 'org.calypsonet.terminal:calypsonet-terminal-reader-java-api:1.0.
 implementation 'org.eclipse.keyple:keyple-common-java-api:2.0.+'
 implementation 'org.eclipse.keyple:keyple-util-java-lib:2.+'
 implementation 'org.eclipse.keyple:keyple-service-java-lib:2.0.1'
-implementation 'com.springcard.keyple:keyple-plugin-springcard-pcsclike-android:1.0.0'
+implementation 'com.springcard.keyple:keyple-plugin-springcard-android-pcsclike-java-lib:1.0.0'
 ```
 
 ### Gradle Kotlin
@@ -28,7 +28,7 @@ implementation("org.calypsonet.terminal:calypsonet-terminal-reader-java-api:1.0.
 implementation("org.eclipse.keyple:keyple-common-java-api:2.0.+")
 implementation("org.eclipse.keyple:keyple-util-java-lib:2.+")
 implementation("org.eclipse.keyple:keyple-service-java-lib:2.0.1")
-implementation("com.springcard.keyple:keyple-plugin-springcard-pcsclike-android:1.0.0")
+implementation("com.springcard.keyple:keyple-plugin-springcard-android-pcsclike-java-lib:1.0.0")
 ```
 
 ### Maven
@@ -55,7 +55,7 @@ implementation("com.springcard.keyple:keyple-plugin-springcard-pcsclike-android:
 </dependency>
 <dependency>
   <groupId>com.springcard.keyple</groupId>
-  <artifactId>keyple-plugin-springcard-pcsclike-android</artifactId>
+  <artifactId>keyple-plugin-springcard-android-pcsclike-java-lib</artifactId>
   <version>1.0.0</version>
 </dependency>
 ```

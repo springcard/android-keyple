@@ -1,7 +1,7 @@
 # Keyple Plugin SpringCard PC/SC-like Android
 
 [![Kotlin](https://img.shields.io/badge/kotlin-1.4.20-blue.svg?logo=kotlin)](http://kotlinlang.org)
-[![KDoc link](https://img.shields.io/badge/API_reference-KDoc-blue)](https://springcard.github.io/keyple-plugin-springcard-android-pcsclike-java-lib/)
+[![KDoc link](https://img.shields.io/badge/API_reference-KDoc-blue)](https://springcard.github.io/android-keyple/)
 
 ## Overview
 

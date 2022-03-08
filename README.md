@@ -61,15 +61,15 @@ implementation("com.springcard.keyple:keyple-plugin-springcard-pcsclike-android:
 ```
 
 ## Initialization of the plugin
-The first thing to do to use this plugin is to get a factory with [AndroidPcscPluginFactoryProvider] by providing it with
-- the type of device ([AndroidPcscPluginFactory.DeviceType]),
+The first thing to do to use this plugin is to get a factory with [AndroidPcsclikePluginFactoryProvider] by providing it with
+- the type of device ([AndroidPcsclikePluginFactory.DeviceType]),
 - the Android context.
 
 ```kotlin
 // initialization
-pluginFactory = AndroidPcscPluginFactoryProvider.getFactory(AndroidPcscPluginFactory.DeviceType.USB, activity)
+pluginFactory = AndroidPcsclikePluginFactoryProvider.getFactory(AndroidPcsclikePluginFactory.DeviceType.USB, activity)
 // registration
-androidPcscPlugin = smartCardService.registerPlugin(pluginFactory) as ObservablePlugin
+androidPcsclikePlugin = smartCardService.registerPlugin(pluginFactory) as ObservablePlugin
 ```
 
 ## Register and observe
@@ -78,27 +78,27 @@ Submit the obtained factory to the smart card service of Keyple and get back the
 Become an observer of the plugin to retrieve the readers from the events generated during their connection.
 ```kotlin
 // set up observation
-androidPcscPlugin.setPluginObservationExceptionHandler(this)
-androidPcscPlugin.addObserver(this)
+androidPcsclikePlugin.setPluginObservationExceptionHandler(this)
+androidPcsclikePlugin.addObserver(this)
 ```
 
 ## Reader discovery
 
-Start the device scanning with [AndroidPcscPlugin.scanDevices].
+Start the device scanning with [AndroidPcsclikePlugin.scanDevices].
 <br>
 Handle the result received by the class implementing *DeviceScannerSpi*.
 ```kotlin
 // discover readers
-androidPcscPlugin
-    .getExtension(AndroidPcscPlugin::class.java)
+androidPcsclikePlugin
+    .getExtension(AndroidPcsclikePlugin::class.java)
     .scanDevices(2, true, this)
 
 override fun onDeviceDiscovered(deviceInfoList: MutableCollection<DeviceInfo>) {
     // connect to first discovered device
     if (deviceInfoList.isNotEmpty()) {
       val device = deviceInfoList.first()
-      androidPcscPlugin
-          .getExtension(AndroidPcscPlugin::class.java)
+      androidPcsclikePlugin
+          .getExtension(AndroidPcsclikePlugin::class.java)
           .connectToDevice(device.identifier)
     } else {
         // handle empty list
@@ -115,7 +115,7 @@ override fun onPluginEvent(pluginEvent: PluginEvent?) {
             // connect to the reader identified by its name
             for (readerName in pluginEvent.readerNames) {
                 if (readerName.toUpperCase().contains("CONTACTLESS")) {
-                    cardReader = androidPcscPlugin.getReader(readerName) as ObservableReader
+                    cardReader = androidPcsclikePlugin.getReader(readerName) as ObservableReader
                     if (cardReader != null) {
                         cardReader!!.getExtension(AndroidPcscReader::class.java)
                             .setContactless(true)

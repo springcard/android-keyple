@@ -1,0 +1,4 @@
+<resources>
+    <string name="ble_not_supported">BLE not supported</string>
+    <string name="usb_host_not_supported">USB HOST not supported</string>
+</resources>

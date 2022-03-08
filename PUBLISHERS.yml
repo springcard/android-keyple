@@ -1,0 +1,18 @@
+url: https://github.com/springcard/android-keyple
+organization:
+  name: SpringCard
+  url: https://www.springcard.com/
+licenses:
+  - name: SpringCard SDK License Agreement
+    url: https://www.springcard.com/
+    distribution: repo
+developers:
+  - name: SpringCard
+    email: support-dev@springcard.com
+scm:
+  connection: scm:git:git://github.com/springcard/android-keyple.git
+  developerConnection: scm:git:https://github.com/springcard/android-keyple.git
+  url: https://github.com/springcard/android-keyple
+ciManagement:
+  system: GitHub Actions
+  url: https://github.com/springcard/android-keyple/actions

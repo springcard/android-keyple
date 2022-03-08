@@ -125,17 +125,17 @@ dependencies {
 ///////////////////////////////////////////////////////////////////////////////
 tasks {
     dokkaHtml.configure {
-        moduleName.set("Keyple® plugin Android PCSC")
+        moduleName.set("Keyple® plugin SpringCard PCSC-like Android")
         dokkaSourceSets {
             named("main") {
                 noAndroidSdkLink.set(false)
                 includeNonPublic.set(false)
                 includes.from(files(
-                    "src/main/kotlin/com/springcard/keyple/plugin/android/pcsc/package-info.md",
-                    "src/main/kotlin/com/springcard/keyple/plugin/android/pcsc/spi/package-info.md"))
+                    "src/main/kotlin/com/springcard/keyple/plugin/android/pcsclike/package-info.md",
+                    "src/main/kotlin/com/springcard/keyple/plugin/android/pcsclike/spi/package-info.md"))
                 // Suppress a package
                 perPackageOption {
-                    matchingRegex.set(""".*pcsclike.*""") // will match all pcsclike packages and sub-packages
+                    matchingRegex.set(""".*springcard.pcsclike.*""") // will match all low level pcsclike packages and sub-packages
                     suppress.set(true)
                 }
             }

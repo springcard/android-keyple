@@ -75,6 +75,7 @@ internal abstract class AbstractAndroidPcsclikePluginAdapter(
   }
 
   override fun onUnregister() {
+    readerList?.close()
     SCardReaderList.clearCache()
     Timber.i("Plugin unregistered.")
   }

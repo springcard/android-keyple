@@ -5,7 +5,7 @@ Thanks for your interest in this project.
 ## Contributing
 
 1. [Fork](https://help.github.com/articles/fork-a-repo) the [springcard/android-keyple](https://github.com/springcard/android-keyple) repository
-2. Clone repository: `git clone https://github.com/[your_github_username]/keyple-plugin-springcard-pcsclike-android.git`
+2. Clone repository: `git clone https://github.com/[your_github_username]/keyple-plugin-springcard-android-pcsclike-java-lib.git`
 3. Create your feature branch: `git checkout -b my-new-feature`
 4. Make your changes
 5. Commit your changes: `git commit -m "Add some feature" -s`

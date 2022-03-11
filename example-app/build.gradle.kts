@@ -31,7 +31,7 @@ android {
     }
 
     defaultConfig {
-        applicationId("com.springcard.keyple.plugin.android.pcsc.example")
+        applicationId("com.springcard.keyple.plugin.android.pcsclike.example")
         minSdkVersion(26)
         targetSdkVersion(31)
         versionName(project.version.toString())

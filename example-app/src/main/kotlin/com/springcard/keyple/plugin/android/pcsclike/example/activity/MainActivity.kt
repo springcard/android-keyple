@@ -12,6 +12,7 @@ import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import android.widget.Toast
@@ -187,18 +188,30 @@ class MainActivity : AppCompatActivity(), EventNotifierSpi {
    */
   private fun checkPermissionAndLaunchBle() {
     addActionEvent("Starting in BLE mode...")
+    val permissions =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+          arrayOf(
+              Manifest.permission.BLUETOOTH_SCAN,
+              Manifest.permission.BLUETOOTH_CONNECT,
+              Manifest.permission.ACCESS_FINE_LOCATION)
+        } else {
+          arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
     isReaderDetectionPending = true
     packageManager.takeIf { !it.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE) }?.also {
       Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show()
       finish()
     }
-    if (PermissionHelper.checkPermission(
-        this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), BLE_PERMISSIONS_REQUEST)) {
-      Timber.i("BLE permission %s is already granted", Manifest.permission.ACCESS_FINE_LOCATION)
+    if (PermissionHelper.checkPermission(this, permissions, BLE_PERMISSIONS_REQUEST)) {
+      for (permission in permissions) {
+        Timber.i("BLE %s is already granted", permission)
+      }
       launchBle()
     } else {
-      addActionEvent("Request ACCESS_FINE_LOCATION permission.")
-      Timber.i("BLE permission %s is requested", Manifest.permission.ACCESS_FINE_LOCATION)
+      for (permission in permissions) {
+        addActionEvent("Request $permission.")
+        Timber.i("BLE %s is requested", permission)
+      }
     }
   }
 
@@ -215,8 +228,13 @@ class MainActivity : AppCompatActivity(), EventNotifierSpi {
     super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     when (requestCode) {
       BLE_PERMISSIONS_REQUEST -> {
-        val permissionGranted =
-            grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
+        var permissionGranted = true
+        for (grantResult in grantResults) {
+          if (grantResult != PackageManager.PERMISSION_GRANTED) {
+            permissionGranted = false
+            break
+          }
+        }
         if (permissionGranted) {
           launchBle()
         } else {

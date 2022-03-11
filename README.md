@@ -151,3 +151,5 @@ It has been tested with SpringCard readers [Puck One](https://www.springcard.com
 ## About the source code
 
 The code is built with **Gradle** and is compliant with **Java 1.8** in order to address a wide range of applications.
+
+The formatting of the code is kept clean by [spotless](https://github.com/diffplug/spotless).

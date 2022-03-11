@@ -1,0 +1,1 @@
+sourceset_dependencies='{":springcard-pcsclike-plugin:dokkaHtml/androidTestRelease":[],":springcard-pcsclike-plugin:dokkaHtml/debug":[],":springcard-pcsclike-plugin:dokkaHtml/main":[],":springcard-pcsclike-plugin:dokkaHtml/release":[]}'

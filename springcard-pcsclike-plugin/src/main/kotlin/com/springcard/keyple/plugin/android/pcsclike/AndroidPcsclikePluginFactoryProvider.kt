@@ -13,6 +13,10 @@ import android.content.Context
  * @since 1.0.0
  */
 object AndroidPcsclikePluginFactoryProvider {
+  /**
+   * Returns the plugin factory for the provided device type and context.
+   * @since 1.0.0
+   */
   fun getFactory(
       deviceType: AndroidPcsclikePluginFactory.DeviceType,
       context: Context

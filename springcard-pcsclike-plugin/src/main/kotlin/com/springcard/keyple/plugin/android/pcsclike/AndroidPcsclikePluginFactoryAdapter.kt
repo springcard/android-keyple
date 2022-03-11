@@ -27,13 +27,18 @@ internal constructor(
     return name
   }
 
-  /** Instantiates the plugin according to the specified link. */
+  /**
+   * Instantiates the plugin according to the specified device type.
+   *
+   * Each plugin variant is a singleton to which we provide the current context.
+   * @since 1.0.0
+   */
   override fun getPlugin(): PluginSpi =
       when (deviceType) {
         AndroidPcsclikePluginFactory.DeviceType.BLE ->
-            AndroidBlePcsclikePluginAdapter(name, context)
+            AndroidBlePcsclikePluginAdapter.getInstance(name).setContext(context)
         AndroidPcsclikePluginFactory.DeviceType.USB ->
-            AndroidUsbPcsclikePluginAdapter(name, context)
+            AndroidUsbPcsclikePluginAdapter.getInstance(name).setContext(context)
       }
 
   override fun getCommonApiVersion(): String = CommonApiProperties.VERSION

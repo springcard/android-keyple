@@ -22,10 +22,8 @@ import timber.log.Timber
  * Class providing the common features of both USB and BLE links
  * @since 1.0.0
  */
-internal abstract class AbstractAndroidPcsclikePluginAdapter(
-    private var name: String,
-    var context: Context
-) : AndroidPcsclikePlugin, ObservablePluginSpi {
+internal abstract class AbstractAndroidPcsclikePluginAdapter(private var name: String) :
+    AndroidPcsclikePlugin, ObservablePluginSpi {
 
   private val WAIT_RESPONSE_TIMEOUT: Long = 5000
   private val MONITORING_CYCLE_DURATION_MS = 1000
@@ -35,6 +33,8 @@ internal abstract class AbstractAndroidPcsclikePluginAdapter(
   private val readerSpis: MutableMap<String, AndroidPcsclikeReaderAdapter> = mutableMapOf()
   private val waitControlResponse = ConditionVariable()
   private lateinit var controlResponse: ByteArray
+
+  abstract fun setContext(context: Context): AbstractAndroidPcsclikePluginAdapter
 
   abstract override fun scanDevices(
       timeout: Long,
@@ -54,13 +54,15 @@ internal abstract class AbstractAndroidPcsclikePluginAdapter(
 
   override fun searchAvailableReaders(): MutableSet<ReaderSpi> {
     for (sCardReader in sCardReaders.values) {
-      readerSpis.put(sCardReader.name, AndroidPcsclikeReaderAdapter(sCardReader))
+      readerSpis[sCardReader.name] = AndroidPcsclikeReaderAdapter(sCardReader)
     }
     return readerSpis.values.toMutableSet()
   }
 
   override fun searchAvailableReaderNames(): MutableSet<String> {
-    return sCardReaders.keys
+    synchronized(sCardReaders) {
+      return sCardReaders.keys
+    }
   }
 
   override fun searchReader(readerName: String): ReaderSpi? {
@@ -75,7 +77,13 @@ internal abstract class AbstractAndroidPcsclikePluginAdapter(
   }
 
   override fun onUnregister() {
-    readerList?.close()
+    try {
+      readerList?.close()
+    } catch (e: Exception) {
+      Timber.e("Error while closing reader list: ${e.message}")
+    }
+    sCardReaders.clear()
+    readerSpis.clear()
     SCardReaderList.clearCache()
     Timber.i("Plugin unregistered.")
   }
@@ -105,12 +113,14 @@ internal abstract class AbstractAndroidPcsclikePluginAdapter(
   /** Implementation of the callback methods defined by @SCardReaderList */
   var scardCallbacks: SCardReaderListCallback =
       object : SCardReaderListCallback() {
-        override fun onReaderListCreated(sCardReaderList: SCardReaderList) {
-          for (i in 0 until sCardReaderList.slotCount) {
-            Timber.v("Add reader: %s", sCardReaderList.slots[i])
-            sCardReaderList.getReader(i)?.let { sCardReaders.put(it.name, it) }
+        override fun onReaderListCreated(readerList: SCardReaderList) {
+          synchronized(sCardReaders) {
+            for (i in 0 until readerList.slotCount) {
+              Timber.v("Add reader: %s", readerList.slots[i])
+              readerList.getReader(i)?.let { sCardReaders.put(it.name, it) }
+            }
           }
-          readerList = sCardReaderList
+          this@AbstractAndroidPcsclikePluginAdapter.readerList = readerList
         }
 
         override fun onReaderListClosed(readerList: SCardReaderList?) {

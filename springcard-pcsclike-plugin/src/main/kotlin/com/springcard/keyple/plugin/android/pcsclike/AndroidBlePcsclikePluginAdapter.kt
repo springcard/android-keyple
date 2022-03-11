@@ -28,8 +28,9 @@ import timber.log.Timber
  * Provides the specific means to manage BLE devices.
  * @since 1.0.0
  */
-internal class AndroidBlePcsclikePluginAdapter(name: String, context: Context) :
-    AbstractAndroidPcsclikePluginAdapter(name, context) {
+internal class AndroidBlePcsclikePluginAdapter(name: String) :
+    AbstractAndroidPcsclikePluginAdapter(name) {
+  private lateinit var context: Context
   private val bluetoothDeviceList: MutableMap<String, BluetoothDevice> = mutableMapOf()
   private val bluetoothDeviceInfoMap: MutableMap<String, DeviceInfo> = mutableMapOf()
   private lateinit var bluetoothScanner: BluetoothLeScanner
@@ -42,6 +43,19 @@ internal class AndroidBlePcsclikePluginAdapter(name: String, context: Context) :
     bluetoothManager.adapter
   }
 
+  /** Singleton pattern */
+  companion object :
+      SingletonHolder<AndroidBlePcsclikePluginAdapter, String>(::AndroidBlePcsclikePluginAdapter)
+
+  /**
+   * Provides the context
+   * @since 1.0.0
+   */
+  override fun setContext(context: Context): AndroidBlePcsclikePluginAdapter {
+    this.context = context
+    return this
+  }
+
   /** Specific scanning for BLE devices. */
   override fun scanDevices(
       timeout: Long,
@@ -51,7 +65,7 @@ internal class AndroidBlePcsclikePluginAdapter(name: String, context: Context) :
     this.stopOnFirstDeviceDiscovered = stopOnFirstDeviceDiscovered
     this.deviceScannerSpi = deviceScannerSpi
     bluetoothScanner = this.bluetoothAdapter!!.bluetoothLeScanner
-    scanBleDevices(timeout * 1000)
+    scanBleDevices(timeout)
   }
 
   /**

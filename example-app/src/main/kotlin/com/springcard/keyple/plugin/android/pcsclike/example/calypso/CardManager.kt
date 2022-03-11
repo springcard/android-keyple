@@ -279,7 +279,7 @@ internal class CardManager(private val activity: MainActivity) {
         .withPlugins(
             PluginsConfigurator.builder()
                 .addPlugin(plugin) { reader: Reader ->
-                  Timber.e("Nothing to configure for reader '%s'", reader.name)
+                  Timber.d("Nothing to configure for reader '%s'", reader.name)
                 }
                 .build())
         .withCardResourceProfiles(
@@ -310,6 +310,7 @@ internal class CardManager(private val activity: MainActivity) {
   }
 
   fun cleanUp() {
+    Timber.d("Stopping card resource service...")
     cardResourceService?.stop()
   }
 }

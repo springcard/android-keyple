@@ -28,6 +28,7 @@ import timber.log.Timber
 internal class ReaderManager(private val activity: MainActivity) :
     DeviceScannerSpi, PluginObserverSpi, CardReaderObserverSpi {
 
+  private val SCANNING_TIME: Long = 2000
   private lateinit var androidPcsclikePlugin: ObservablePlugin
   private var cardReader: ObservableReader? = null
   private val cardManager: CardManager = CardManager(activity)
@@ -58,11 +59,14 @@ internal class ReaderManager(private val activity: MainActivity) :
     // in
     // return
     androidPcsclikePlugin = smartCardService.registerPlugin(pluginFactory) as ObservablePlugin
-    androidPcsclikePlugin.getExtension(AndroidPcsclikePlugin::class.java).scanDevices(2, true, this)
     androidPcsclikePlugin.setPluginObservationExceptionHandler { pluginName, e ->
       Timber.e(e, "An unexpected plugin error occurred in '%s':", pluginName)
     }
+    androidPcsclikePlugin.removeObserver(this)
     androidPcsclikePlugin.addObserver(this)
+    androidPcsclikePlugin
+        .getExtension(AndroidPcsclikePlugin::class.java)
+        .scanDevices(SCANNING_TIME, true, this)
 
     activity.onResult("Plugin '${androidPcsclikePlugin.name}' created and observed")
 
@@ -97,15 +101,17 @@ internal class ReaderManager(private val activity: MainActivity) :
   }
 
   /** Stops started services cleanly */
-  fun cleanUp() {
-    // stop propagating the reader events
-    cardReader?.removeObserver(this)
-    // Unregister all plugins
-    SmartCardServiceProvider.getService().plugins.forEach {
-      SmartCardServiceProvider.getService().unregisterPlugin(it.name)
-    }
+  fun cleanUp(unregisterPlugins: Boolean) {
     // cleanup card manager (stop card resource service)
     cardManager.cleanUp()
+    // stop propagating the reader events
+    cardReader?.removeObserver(this)
+    if (unregisterPlugins) {
+      // Unregister all plugins
+      SmartCardServiceProvider.getService().plugins.forEach {
+        SmartCardServiceProvider.getService().unregisterPlugin(it.name)
+      }
+    }
   }
 
   override fun onPluginEvent(pluginEvent: PluginEvent?) {
@@ -116,10 +122,10 @@ internal class ReaderManager(private val activity: MainActivity) :
         logMessage += ", reader=$readerName"
       }
       Timber.d(logMessage)
-      activity.onAction("Set up reader(s).")
-      var cardReaderAvailable = false
-      var samReaderAvailable = false
       if (pluginEvent.type == PluginEvent.Type.READER_CONNECTED) {
+        activity.onAction("Set up reader(s).")
+        var cardReaderAvailable = false
+        var samReaderAvailable = false
         // the card and SAM readers are assigned according to their name.
         // Here the card reader contains 'contactless' in its name and the SAM reader contains
         // 'SAM'.
@@ -134,7 +140,7 @@ internal class ReaderManager(private val activity: MainActivity) :
         }
         // If a SAM reader is present, the presence of a SAM will be made later.
         if (!samReaderAvailable) {
-          // nous n'avons pas trouvé de lecteur SAM.
+          // we did not find a SAM reader.
           activity.onResult("No SAM reader available. Continue without security")
         }
         if (cardReaderAvailable) {
@@ -142,12 +148,13 @@ internal class ReaderManager(private val activity: MainActivity) :
           // notify the parent activity the availability of the reader(s)
           activity.onReaderReady()
         }
-      }
-      if (pluginEvent.type == PluginEvent.Type.READER_DISCONNECTED) {
+      } else if (pluginEvent.type == PluginEvent.Type.READER_DISCONNECTED) {
         for (readerName in pluginEvent.readerNames) {
-          activity.onAction("Reader '$readerName' dicconnected.")
+          activity.onAction("Reader '$readerName' disconnected.")
         }
         activity.onReaderDisconnected()
+      } else if (pluginEvent.type == PluginEvent.Type.UNAVAILABLE) {
+        activity.onResult("Plugin '${pluginEvent.pluginName}' unregistered")
       }
     }
   }
@@ -159,6 +166,7 @@ internal class ReaderManager(private val activity: MainActivity) :
    * @param readerName The name of the reader.
    */
   private fun onCardReaderConnected(readerName: String) {
+    Timber.i("Reader '$readerName' assigned to card operation")
     cardReader = androidPcsclikePlugin.getReader(readerName) as ObservableReader
 
     if (cardReader != null) {
@@ -188,7 +196,13 @@ internal class ReaderManager(private val activity: MainActivity) :
    * @param readerName The name of the reader.
    */
   private fun onSamReaderConnected(readerName: String) {
-    cardManager.setupSecurityService(androidPcsclikePlugin, readerName)
+    if (androidPcsclikePlugin.getReader(readerName).isCardPresent) {
+      Timber.i("Reader '%s' assigned to SAM operation", readerName)
+      cardManager.setupSecurityService(androidPcsclikePlugin, readerName)
+    } else {
+      activity.onResult("No SAM in reader, continue without security")
+      Timber.i("[%s]: no SAM present", readerName)
+    }
   }
 
   override fun onReaderEvent(readerEvent: CardReaderEvent?) {

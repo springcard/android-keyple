@@ -43,7 +43,7 @@ internal class AndroidPcsclikeReaderAdapter(val sCardReader: SCardReader) :
   }
 
   override fun openPhysicalChannel() {
-    Timber.v("Open physical channel")
+    Timber.v("[%s]: Open physical channel", name)
     try {
       sCardReader.cardConnect()
       waitCardConnect.block(WAIT_CARD_CONNECT_TIMEOUT)
@@ -54,20 +54,20 @@ internal class AndroidPcsclikeReaderAdapter(val sCardReader: SCardReader) :
   }
 
   override fun closePhysicalChannel() {
-    Timber.v("Close physical channel")
+    Timber.v("[%s]: Close physical channel", name)
     // may be invoked at any time, run in a separate thread
-    synchronized(sCardReader) { Runnable { sCardReader.channel.disconnect() } }
+    Runnable { sCardReader.channel.disconnect() }
   }
 
   override fun isPhysicalChannelOpen(): Boolean {
     val isCardConnected = sCardReader.cardConnected
-    Timber.v("Physical channel is open: %b", isCardConnected)
+    Timber.v("[%s]: Physical channel is open: %b", name, isCardConnected)
     return isCardConnected
   }
 
   override fun checkCardPresence(): Boolean {
     isCardPresent = sCardReader.cardPresent
-    Timber.v("Card present: %b", isCardPresent)
+    Timber.v("[%s]: Card present: %b", name, isCardPresent)
     return isCardPresent
   }
 
@@ -80,14 +80,13 @@ internal class AndroidPcsclikeReaderAdapter(val sCardReader: SCardReader) :
       sCardReader.channel.transmit(apduIn)
       waitCardResponse.block(WAIT_RESPONSE_TIMEOUT)
       waitCardResponse.close()
-      synchronized(cardResponse) {
-        if (cardResponse.isEmpty()) {
-          throw CardIOException("[${this.name}]: not response received from the card.")
-        }
+      if (cardResponse.isEmpty()) {
+        throw CardIOException("[$name]: not response received from the card.")
       }
+
       return cardResponse
     } else {
-      throw ReaderIOException("[${this.name}]: null channel.")
+      throw ReaderIOException("[$name]: null channel.")
     }
   }
 
@@ -135,14 +134,13 @@ internal class AndroidPcsclikeReaderAdapter(val sCardReader: SCardReader) :
   }
 
   fun onCardPresenceChange(isCardPresent: Boolean) {
-    Timber.e("Reader '%s', card presence changed: %b", name, isCardPresent)
+    Timber.d("[%s]: card presence changed: %b", name, isCardPresent)
     this.isCardPresent = isCardPresent
     waitCardStatusChange.open()
     if (!isCardPresent) {
       // abort possible pending transmission of apdu
-      Timber.e("Abort transmit APDU")
-      synchronized(this) { this.cardResponse = byteArrayOf() }
-      // waitCardResponse.open()
+      Timber.d("[%s]: Abort transmit APDU", name)
+      this.cardResponse = byteArrayOf()
     }
   }
 
@@ -151,13 +149,13 @@ internal class AndroidPcsclikeReaderAdapter(val sCardReader: SCardReader) :
   }
 
   fun onCardResponseReceived(cardResponse: ByteArray) {
-    Timber.d("Reader '%s', %d bytes received from the card", name, cardResponse.size)
-    synchronized(this) { this.cardResponse = cardResponse }
+    Timber.d("[%s]: %d bytes received from the card", name, cardResponse.size)
+    this.cardResponse = cardResponse
     waitCardResponse.open()
   }
 
   fun onReaderOrCardError() {
-    synchronized(this) { this.cardResponse = byteArrayOf() }
+    this.cardResponse = byteArrayOf()
     waitCardResponse.open()
   }
 }

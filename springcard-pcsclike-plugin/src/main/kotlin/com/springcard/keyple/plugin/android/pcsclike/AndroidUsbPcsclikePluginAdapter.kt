@@ -26,8 +26,9 @@ import timber.log.Timber
  * Provides the specific means to manage USB devices.
  * @since 1.0.0
  */
-internal class AndroidUsbPcsclikePluginAdapter(name: String, context: Context) :
-    AbstractAndroidPcsclikePluginAdapter(name, context) {
+internal class AndroidUsbPcsclikePluginAdapter(name: String) :
+    AbstractAndroidPcsclikePluginAdapter(name) {
+  private lateinit var context: Context
   private var usbAttachReceiver: BroadcastReceiver? = null
   private var isUsbAttachReceiverEnabled = true
   private val usbDeviceList: MutableMap<String, UsbDevice> = mutableMapOf()
@@ -37,15 +38,16 @@ internal class AndroidUsbPcsclikePluginAdapter(name: String, context: Context) :
   private val handler: Handler = Handler(Looper.getMainLooper())
   private val ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION"
 
-  private val usbManager: UsbManager by lazy {
-    context.getSystemService(Context.USB_SERVICE) as UsbManager
-  }
+  /** Singleton pattern */
+  companion object :
+      SingletonHolder<AndroidUsbPcsclikePluginAdapter, String>(::AndroidUsbPcsclikePluginAdapter)
 
-  private val permissionIntent: PendingIntent by lazy {
-    PendingIntent.getBroadcast(context, 0, Intent(ACTION_USB_PERMISSION), 0)
-  }
-
-  init {
+  /**
+   * Provides the context and initializes device filtering.
+   * @since 1.0.0
+   */
+  override fun setContext(context: Context): AndroidUsbPcsclikePluginAdapter {
+    this.context = context
     /* Parse device_filter.xml */
     val xmlResourceParser = context.resources.getXml(R.xml.device_filter)
     var eventType = xmlResourceParser.eventType
@@ -67,6 +69,15 @@ internal class AndroidUsbPcsclikePluginAdapter(name: String, context: Context) :
     val usbManager = context.getSystemService(Context.USB_SERVICE) as UsbManager
     val deviceList: HashMap<String, UsbDevice> = usbManager.deviceList
     deviceList.values.forEach { device -> addDevice(device) }
+    return this
+  }
+
+  private val usbManager: UsbManager by lazy {
+    context.getSystemService(Context.USB_SERVICE) as UsbManager
+  }
+
+  private val permissionIntent: PendingIntent by lazy {
+    PendingIntent.getBroadcast(context, 0, Intent(ACTION_USB_PERMISSION), 0)
   }
 
   /** Specific scanning for USB devices. */
@@ -81,7 +92,7 @@ internal class AndroidUsbPcsclikePluginAdapter(name: String, context: Context) :
     context.packageManager.takeIf { !it.hasSystemFeature(PackageManager.FEATURE_USB_HOST) }?.also {
       Toast.makeText(context, R.string.usb_host_not_supported, Toast.LENGTH_SHORT).show()
     }
-    handler.postDelayed(notifyScanResults, timeout * 1000)
+    handler.postDelayed(notifyScanResults, timeout)
     isUsbAttachReceiverEnabled = true
     usbAttachReceiver =
         object : BroadcastReceiver() {
@@ -109,6 +120,7 @@ internal class AndroidUsbPcsclikePluginAdapter(name: String, context: Context) :
                 synchronized(this) {
                   if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                     Timber.d("Permission granted for device %s", usbDevice)
+                    SCardReaderList.clearCache()
                     SCardReaderList.create(context, usbDevice!!, scardCallbacks)
                   } else {
                     Timber.d("Permission denied for device %s", usbDevice)
@@ -134,6 +146,7 @@ internal class AndroidUsbPcsclikePluginAdapter(name: String, context: Context) :
       if (usbManager.hasPermission(usbDevice)) {
         // permission is already granted, let's create the SCardReaderList
         Timber.d("USB permission is already granted")
+        SCardReaderList.clearCache()
         SCardReaderList.create(context, usbDevice, scardCallbacks)
       } else {
         // request permission

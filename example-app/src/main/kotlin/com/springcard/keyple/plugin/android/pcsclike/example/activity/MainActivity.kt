@@ -102,7 +102,7 @@ class MainActivity : AppCompatActivity(), EventNotifierSpi {
 
   /** Called when the activity (screen) is destroyed */
   override fun onDestroy() {
-    readerManager.cleanUp()
+    readerManager.cleanUp(true)
     super.onDestroy()
   }
 

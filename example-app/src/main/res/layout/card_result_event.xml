@@ -13,7 +13,7 @@
         android:layout_margin="2dp"
         android:layout_marginTop="4dp"
         android:layout_marginBottom="4dp"
-        app:cardBackgroundColor="@color/colorSecondaryLight"
+        app:cardBackgroundColor="@color/colorPrimaryDark"
         app:cardCornerRadius="10dp"
         app:cardElevation="5dp"
         app:cardUseCompatPadding="true"
@@ -27,7 +27,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:textAlignment="textStart"
-            android:textColor="@color/textColorsecondary"/>
+            android:textColor="@color/textColorPrimary"/>
             tools:text="Result" />
     </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>

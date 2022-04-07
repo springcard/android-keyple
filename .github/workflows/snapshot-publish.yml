@@ -1,0 +1,45 @@
+name: Compile and Deploy Java Api to Maven Central
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  java-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code from ${{ github.repository }}/${{ github.ref }}
+        uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Update permissions
+        working-directory: .
+        run: chmod +x ./gradlew ./.github/scripts/*.sh
+      - name: Write gradle.properties
+        run: |
+          mkdir -p ~/.gradle
+          echo "${{ secrets.GRADLE_PROPERTIES }}" | base64 -d > ~/.gradle/gradle.properties
+      - name: Install gpg secret key
+        run: |
+          cat <(echo -e "${{ secrets.OSSRH_GPG_SECRET_KEY }}") | gpg --batch --import
+          gpg --pinentry-mode loopback --export-secret-key 3F31E212E33BE0F63803FF9880193271ECE60317 > ~/.gradle/maven-central.gpg
+          gpg --list-secret-keys --keyid-format LONG
+      - name: Check version
+        working-directory: .
+        run: ./.github/scripts/check_version.sh
+      - name: Build and Test
+        working-directory: .
+        run: ./gradlew build test publish dokkaHtml --info --stacktrace
+      - name: Prepare Dokka doc locally
+        working-directory: .
+        run: ./.github/scripts/prepare_javadoc.sh
+      - name: Deploy Dokka doc to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./${{ github.event.repository.name }}
+          enable_jekyll: true

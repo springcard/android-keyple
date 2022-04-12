@@ -1,12 +1,12 @@
-name: Compile and Deploy Java Api to Maven Central
+name: Compile and Deploy Plugin SNAPSHOT to Maven Central
 
 on:
   push:
     branches:
-      - master
+      - test
 
 jobs:
-  java-publish:
+  snapshot-publish:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code from ${{ github.repository }}/${{ github.ref }}
@@ -26,8 +26,11 @@ jobs:
       - name: Install gpg secret key
         run: |
           cat <(echo -e "${{ secrets.OSSRH_GPG_SECRET_KEY }}") | gpg --batch --import
+          echo "cat"
           gpg --export-secret-key 3F31E212E33BE0F63803FF9880193271ECE60317 > ~/.gradle/maven-central.gpg
+          echo "export"
           gpg --list-secret-keys --keyid-format LONG
+          echo "list"
       - name: Check version
         working-directory: .
         run: ./.github/scripts/check_version.sh

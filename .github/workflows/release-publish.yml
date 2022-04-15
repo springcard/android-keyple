@@ -1,12 +1,12 @@
-name: Compile and Deploy Snapshot Library to Maven Central
+name: Release Library to Maven Central
 
 on:
-  push:
-    branches:
-      - master
+  release:
+    types:
+      - published
 
 jobs:
-  snapshot-publish:
+  release-publish:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code from ${{ github.repository }}/${{ github.ref }}
@@ -30,13 +30,15 @@ jobs:
           gpg --list-secret-keys --keyid-format LONG
       - name: Check version
         working-directory: .
-        run: ./.github/scripts/check_version.sh
+        run: ./.github/scripts/check_version.sh $(echo "${{ github.ref }}" | sed -e "s,^refs/tags/,,")
       - name: Build, Test and Publish
         working-directory: .
-        run: ./gradlew build test publish dokkaHtml --info --stacktrace
+        run: |
+          ./gradlew setVersion -P version=$(echo "${{ github.ref }}" | sed -e "s,^refs/tags/,,")
+          ./gradlew build test release dokkaHtml --info --stacktrace
       - name: Prepare Dokka doc locally
         working-directory: .
-        run: ./.github/scripts/prepare_dokkadoc.sh
+        run: ./.github/scripts/prepare_dokkadoc.sh $(echo "${{ github.ref }}" | sed -e "s,^refs/tags/,,")
       - name: Deploy Dokka doc to gh-pages
         uses: peaceiris/actions-gh-pages@v3
         with:

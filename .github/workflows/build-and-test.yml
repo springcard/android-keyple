@@ -1,4 +1,4 @@
-name: Compile and Test Java Api
+name: Compile and Test Plugin Library
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ on:
       - master
 
 jobs:
-  java-test:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code from ${{ github.repository }}/${{ github.ref }}
@@ -30,7 +30,7 @@ jobs:
         run: ./gradlew build test dokkaHtml --info --stacktrace
       - name: Prepare Dokka doc locally
         working-directory: .
-        run: ./.github/scripts/prepare_javadoc.sh
+        run: ./.github/scripts/prepare_dokkadoc.sh
       - name: Deploy Dokka doc to gh-pages
         uses: peaceiris/actions-gh-pages@v3
         with:

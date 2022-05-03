@@ -77,7 +77,12 @@ internal class AndroidUsbPcsclikePluginAdapter(name: String) :
   }
 
   private val permissionIntent: PendingIntent by lazy {
-    PendingIntent.getBroadcast(context, 0, Intent(ACTION_USB_PERMISSION), 0)
+    PendingIntent.getBroadcast(
+        context,
+        0,
+        Intent(ACTION_USB_PERMISSION),
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE // or FLAG_MUTABLE
+        )
   }
 
   /** Specific scanning for USB devices. */

@@ -13,6 +13,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
@@ -81,8 +82,11 @@ internal class AndroidUsbPcsclikePluginAdapter(name: String) :
         context,
         0,
         Intent(ACTION_USB_PERMISSION),
-        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE // or FLAG_MUTABLE
-        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+          PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        } else {
+          PendingIntent.FLAG_UPDATE_CURRENT
+        })
   }
 
   /** Specific scanning for USB devices. */

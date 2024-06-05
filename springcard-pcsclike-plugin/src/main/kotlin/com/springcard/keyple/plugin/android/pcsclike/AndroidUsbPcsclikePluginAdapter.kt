@@ -83,7 +83,7 @@ internal class AndroidUsbPcsclikePluginAdapter(name: String) :
         0,
         Intent(ACTION_USB_PERMISSION),
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-          PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+          PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         } else {
           PendingIntent.FLAG_UPDATE_CURRENT
         })
